@@ -9,7 +9,6 @@
     padding: 10px 0;
 }
 
-
 .OrderButton {
     background-color: #DAD735;
     outline: none;
@@ -36,7 +35,7 @@
 }
 
 .OrderButton:not(:disabled) {
-    animation: enable 1.3s linear;
+    animation: enable 0.3s linear;
 }
 
 @keyframes enable {
