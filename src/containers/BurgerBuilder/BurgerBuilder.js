@@ -4,6 +4,9 @@ import Burger from '../../components/Burger/Burger';
 import BuildControls from '../../components/Burger/BuildControls/BuildControls';
 import Modal from '../../components/UI/Modal/Modal';
 import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
+import axios from '../../axios-orders';
+import Spinner from '../../components/UI/Spinner/Spinner';
+import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
 
 const INGREDIENT_PRICES = {
     salad: 0.5,
@@ -15,21 +18,17 @@ const INGREDIENT_PRICES = {
 class BurgerBuilder extends Component {
 
     state = {
-        ingredients: {
-            salad: 0,
-            bacon: 0,
-            cheese: 0,
-            meat: 0
-        },
+        ingredients: null,
         totalPrice: 4,
         purchasable: false,
-        orderComplete: false
-        
+        orderComplete: false,
+        loading: false,
+        error: false
     }
 
     // if triggered by an event can use this without arrow function
     // otherwise this will not refer to the class 
-    orderCompletionhandler = () => {
+    orderCompletionHandler = () => {
         this.setState({orderComplete: true});
     };
 
@@ -37,8 +36,32 @@ class BurgerBuilder extends Component {
         this.setState({orderComplete: false});
     };
 
-    orderContinueHandler = () => {
-        alert('You will continue!');
+    orderContinueHandler = async () => {
+        //alert('You will continue!');
+        this.setState({loading: true});
+        const order = {
+            ingredients: this.state.ingredients,
+            price: this.state.totalPrice,
+            customer: {
+                name: 'Kieron McCarthy',
+                address: {
+                    street: 'Main Street',
+                    zipCode: '123hdhd',
+                    country: 'Australia'
+                },
+                email: 'test@test.com'
+            },
+            deliveryMethod: 'Air Balloon'
+        }
+        try {
+            const res = await axios.post('/orders.json', order);
+            this.setState({loading: false, purchasable: false});
+            
+            console.log("Response: ", res);
+        } catch (error) {
+            console.log("Error Caught: ", error);
+            this.setState({loading: false, purchasable: false});
+        }
     };
 
     updatePurchaseState (latestIngredients) {
@@ -55,6 +78,18 @@ class BurgerBuilder extends Component {
             },0);
         this.setState({purchasable: sum > 0}) // i.e. true or false
     };
+
+    componentDidMount = async () => {
+        try {
+            const res = await axios.get('/ingredients.json');
+            this.setState({ingredients: res.data});
+            console.log('Ingredients fetched: ', this.state.ingredients); 
+        } catch (error) {
+            console.log('Error while fetching ingredients: ', error)
+            this.setState({error: true});
+        }
+
+    }
 
     addIngredientsHandler = (type) => {
         const oldCount = this.state.ingredients[type];
@@ -101,18 +136,16 @@ class BurgerBuilder extends Component {
             disableInfo[key] = disableInfo[key] <=0; // so each elem now has type: true/false
         };
 
-        // The HOC is being used here to allow adjacent components and therefore
-        // acts as single root element
-        return (
+        let orderSummary = null;
+
+        let burger = this.state.error ? <p>Ingredients Can't be loaded</p> : <Spinner />;
+
+        /* Only use ingredients object for render when it has been
+           fetched from the server */
+        if (this.state.ingredients) {
+
+            burger = (
             <Auxillary>
-                <Modal show={this.state.orderComplete} modalClosed={this.orderCancelHandler} >
-                    <OrderSummary 
-                        ingredients={this.state.ingredients}
-                        orderCancelled={this.orderCancelHandler}
-                        orderContinue={this.orderContinueHandler}
-                        price={this.state.totalPrice}
-                        />
-                </Modal>
                 <Burger ingredients={this.state.ingredients} />
                 <BuildControls 
                     ingredientAdded={this.addIngredientsHandler}
@@ -120,13 +153,34 @@ class BurgerBuilder extends Component {
                     disabled={disableInfo}
                     price={this.state.totalPrice}
                     purchasable={this.state.purchasable}
-                    ordered={this.orderCompletionhandler}
+                    ordered={this.orderCompletionHandler}
                 />
+            </Auxillary>);
+
+            orderSummary = <OrderSummary 
+            ingredients={this.state.ingredients}
+            orderCancelled={this.orderCancelHandler}
+            orderContinue={this.orderContinueHandler}
+            price={this.state.totalPrice} />;
+        }
+
+        if (this.state.loading) {
+            orderSummary = <Spinner />;
+        }
+
+        // The HOC is being used here to allow adjacent components and therefore
+        // acts as single root element
+        return (
+            <Auxillary>
+                <Modal show={this.state.orderComplete} modalClosed={this.orderCancelHandler} >
+                    {orderSummary}
+                </Modal>
+                {burger}
             </Auxillary>
         );
     };
 };
 
-export default BurgerBuilder;
+export default withErrorHandler(BurgerBuilder, axios);
 
 
