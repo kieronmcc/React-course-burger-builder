@@ -7,6 +7,7 @@ import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
 import axios from '../../axios-orders';
 import Spinner from '../../components/UI/Spinner/Spinner';
 import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
+//import queryString from 'query-string'; 
 
 const INGREDIENT_PRICES = {
     salad: 0.5,
@@ -36,32 +37,19 @@ class BurgerBuilder extends Component {
         this.setState({orderComplete: false});
     };
 
-    orderContinueHandler = async () => {
-        //alert('You will continue!');
-        this.setState({loading: true});
-        const order = {
-            ingredients: this.state.ingredients,
-            price: this.state.totalPrice,
-            customer: {
-                name: 'Kieron McCarthy',
-                address: {
-                    street: 'Main Street',
-                    zipCode: '123hdhd',
-                    country: 'Australia'
-                },
-                email: 'test@test.com'
-            },
-            deliveryMethod: 'Air Balloon'
+    orderContinueHandler = () => {
+        const queryParams = []
+        //queryString.stringify(this.state.ingredients, 'strict');
+        for (let i in this.state.ingredients) {
+            queryParams.push(encodeURIComponent(i) + '=' + encodeURIComponent(this.state.ingredients[i]));
         }
-        try {
-            const res = await axios.post('/orders.json', order);
-            this.setState({loading: false, purchasable: false});
-            
-            console.log("Response: ", res);
-        } catch (error) {
-            console.log("Error Caught: ", error);
-            this.setState({loading: false, purchasable: false});
-        }
+        queryParams.push('price=' + this.state.totalPrice);
+        console.log('Query Params: ', queryParams);
+        const queryString = queryParams.join('&');
+        this.props.history.push({
+            pathname: '/checkout',
+            search: '?' + queryString
+        });
     };
 
     updatePurchaseState (latestIngredients) {
