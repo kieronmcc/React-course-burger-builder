@@ -67,6 +67,7 @@ class BurgerBuilder extends Component {
         this.setState({purchasable: sum > 0}) // i.e. true or false
     };
 
+    // Runs on first render cycle - subsequent render cycles call componentDidUpdate
     componentDidMount = async () => {
         try {
             const res = await axios.get('/ingredients.json');
