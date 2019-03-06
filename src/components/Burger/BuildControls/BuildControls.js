@@ -19,7 +19,7 @@ const buildControls = (props) => {
                 <BuildControl 
                     key={ctrl.label} 
                     label={ctrl.label} 
-                    added={() => props.ingredientAdded(ctrl.type)}
+                    added={() => props.ingredientAdded(ctrl.type)} // executes the function according to its prototype so args get passed
                     removed={() => props.ingredientRemoved(ctrl.type)}
                     disabled={props.disabled[ctrl.type]}
                 />
