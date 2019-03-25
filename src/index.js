@@ -1,14 +1,26 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
+import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
-import { createStore } from 'redux';
-import burgerReducer from './store/burgerReducer';
+import { createStore, applyMiddleware, compose, combineReducers } from 'redux';
+
+import './index.css';
+import * as serviceWorker from './serviceWorker';
+import App from './App';
+import burgerReducer from './store/reducers/burgerReducer';
+import orderReducer from './store/reducers/order';
+
+
 
 // Setup Redux
-const store = createStore(burgerReducer)
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+
+const rootReducer = combineReducers({
+    burgerBuilder: burgerReducer,
+    order: orderReducer
+})
+
+const store = createStore(rootReducer, composeEnhancers(applyMiddleware(thunk)));
 
 ReactDOM.render(<Provider store={store}><App /></Provider>,  document.getElementById('root'));
 

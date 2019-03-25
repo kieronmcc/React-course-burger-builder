@@ -1,25 +1,22 @@
 import React, { Component} from 'react';
 import { connect } from 'react-redux';
-
+import axios from '../../axios-orders';
 
 import Auxillary from '../../hoc/Auxillary/Auxillary';
 import Burger from '../../components/Burger/Burger';
 import BuildControls from '../../components/Burger/BuildControls/BuildControls';
 import Modal from '../../components/UI/Modal/Modal';
 import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
-import axios from '../../axios-orders';
 import Spinner from '../../components/UI/Spinner/Spinner';
 import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
 //import queryString from 'query-string'; 
-import * as actionTypes from '../../store/actions';
+import * as actions from '../../store/actions/index';
  
 
 class BurgerBuilder extends Component {
 
     state = {
-        purchasing: false,
-        loading: false,
-        error: false
+        purchasing: false
     }
 
     // if triggered by an event can use this without arrow function
@@ -42,6 +39,7 @@ class BurgerBuilder extends Component {
         // queryParams.push('price=' + this.state.totalPrice);
         // console.log('Query Params: ', queryParams);
         // const queryString = queryParams.join('&');
+        this.props.onInitPurchase();
         this.props.history.push('/checkout');
     }
 
@@ -62,10 +60,12 @@ class BurgerBuilder extends Component {
     }
 
     // Runs on first render cycle - subsequent render cycles call componentDidUpdate
-    // componentDidMount = async () => {
+    //componentDidMount = async () => {
     //     try {
     //         const res = await axios.get('/ingredients.json');
     //         this.setState({ingredients: res.data});
+    // **** We could dispatch an action here within the async block ***
+    // **** But using Redux consistently probably better to implement in action creator
     //         console.log('Ingredients fetched: ', this.state.ingredients); 
     //     } catch (error) {
     //         console.log('Error while fetching ingredients: ', error)
@@ -73,6 +73,10 @@ class BurgerBuilder extends Component {
     //     }
 
     // }
+
+    componentDidMount () {
+        this.props.onInitIngredients();
+    }
 
     // move to reducer
     // addIngredientsHandler = (type) => {
@@ -122,7 +126,9 @@ class BurgerBuilder extends Component {
 
         let orderSummary = null;
 
-        let burger = this.state.error ? <p>Ingredients Can't be loaded</p> : <Spinner />;
+        let burger = this.props.error ? <p>Ingredients Can't be loaded</p> : <Spinner />;
+
+        console.log('Ingredients: ', this.props.ingredients, this.props.error);
 
         /* Only use ingredients object for render when it has been
            fetched from the server */
@@ -148,9 +154,9 @@ class BurgerBuilder extends Component {
             price={this.props.totalPrice} />;
         }
 
-        if (this.state.loading) {
-            orderSummary = <Spinner />;
-        }
+        // if (this.state.loading) {
+        //     orderSummary = <Spinner />;
+        // }
 
         // The HOC is being used here to allow adjacent components and therefore
         // acts as single root element
@@ -168,15 +174,18 @@ class BurgerBuilder extends Component {
 // Setup Redux
 const mapStateToProps = state  => {
     return {
-        ingredients: state.ingredients,
-        totalPrice: state.totalPrice
+        ingredients: state.burgerBuilder.ingredients,
+        totalPrice: state.burgerBuilder.totalPrice,
+        error: state.burgerBuilder.error
     };
 }
 
 const mapDispatchersToProps = dispatch  => {
     return {
-        onAddIngredients: (name) => dispatch({type: actionTypes.ADD_INGREDIENT, ingredientName: name}),
-        onRemoveIngredients: (name) => dispatch({type: actionTypes.REM_INGREDIENT, ingredientName: name})
+        onAddIngredients: (name) => dispatch(actions.addIngredient(name)),
+        onRemoveIngredients: (name) => dispatch(actions.removeIngredient(name)),
+        onInitIngredients: () => dispatch(actions.initIngredients()),
+        onInitPurchase: () => dispatch(actions.purchaseInit())
     };
 } 
 
