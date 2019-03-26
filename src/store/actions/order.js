@@ -80,3 +80,29 @@ export const fetchOrders = () => {
         }   
     }
 }
+
+export const getOrderDetailsSuccess = (orderDetails, orderId) => {
+    return {
+        type: actionTypes.GET_ORDER_DETAILS_SUCCESS,
+        orderDetails: orderDetails,
+        showOrderId: orderId
+    }
+};
+export const getOrderDetails = (orderId) => {
+    return async dispatch => {
+        try {
+            const res = await axios.get(`/orders/${orderId}.json`);
+            const orderDetails = res.data;
+            console.log("Order Details: ", res.data);
+            dispatch( getOrderDetailsSuccess(orderDetails, orderId));
+        } catch (error) {
+            //dispatch( getOrderDeatilsFail());
+        }
+    }
+}
+
+export const cancelOrderDetails = () => {
+    return {
+        type: actionTypes.CANCEL_ORDER_DETAILS
+    }
+}

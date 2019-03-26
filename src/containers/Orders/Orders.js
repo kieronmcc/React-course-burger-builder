@@ -5,12 +5,27 @@ import axios from '../../axios-orders';
 import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
 import * as actions from '../../store/actions/index';
 import Spinner from '../../components/UI/Spinner/Spinner';
+import Modal from '../../components/UI/Modal/Modal';
+import OrderDetails from '../../components/OrderDetails/OrderDetails';
 
 
 class Orders extends Component {
 
-    componentDidMount = async () => {
+    state = {
+        showOrderDetails: false
+    };
+
+    componentDidMount = () => {
         this.props.onFetchOrders();
+    }
+
+    cancelShowDetailsHandler = () => {
+        this.props.onCancelOrderDetails();
+    }
+
+    showDetailsHandler = (id) => {
+        this.setState({showOrderDetails: true});
+        this.props.onGetOrderDetails(id);
     }
 
     render() {
@@ -21,11 +36,23 @@ class Orders extends Component {
                     key={order.id} 
                     ingredients={order.ingredients}
                     price={+order.price}
+                    id={order.id}
+                    clickDetails={() => this.showDetailsHandler(order.id)}
                 />
             ))
         }
+        let orderDetails = null;
+        if (this.props.showOrderDetails) {
+            orderDetails = <OrderDetails 
+                ingredients={this.props.orderDetails.ingredients}
+                customer={this.props.orderDetails.orderData}
+                price={this.props.orderDetails.price} />;
+        }
         return (
             <div>
+                <Modal show={this.props.showOrderDetails} modalClosed={this.cancelShowDetailsHandler} >
+                    {orderDetails}
+                </Modal>
                 {orders}
             </div>
         );
@@ -35,13 +62,18 @@ class Orders extends Component {
 const mapStateToProps = state => {
     return {
         orders: state.order.orders,
-        loading: state.order.loading
+        loading: state.order.loading,
+        orderDetails: state.order.orderDetails,
+        showOrderDetails: state.order.showOrderDetails,
+        showOrderId: state.order.showOrderId
     };
 }
 
 const mapDispatchersToProps = dispatch => {
     return {
-        onFetchOrders: () => dispatch(actions.fetchOrders())
+        onFetchOrders: () => dispatch(actions.fetchOrders()),
+        onGetOrderDetails: (orderId) => dispatch(actions.getOrderDetails(orderId)),
+        onCancelOrderDetails: () => dispatch(actions.cancelOrderDetails())
     };
 };
 

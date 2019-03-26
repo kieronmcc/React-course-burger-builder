@@ -4,7 +4,10 @@ import { updateObject } from '../utility';
 const initialState =  {
     orders: [],
     loading: false,
-    purchased: false
+    purchased: false,
+    orderDetails: null,
+    showOrderId: null,
+    showOrderDetails: false
 }
 
 const reducer = (state = initialState, action) => {
@@ -31,6 +34,14 @@ const reducer = (state = initialState, action) => {
             });
         case actionTypes.FETCH_ORDERS_FAIL :
             return updateObject(state,{loading: false});
+        case actionTypes.GET_ORDER_DETAILS_SUCCESS :
+            return updateObject(state, {
+                orderDetails: action.orderDetails, 
+                showOrderId: action.showOrderId,
+                showOrderDetails: true
+            } );
+        case actionTypes.CANCEL_ORDER_DETAILS :
+            return updateObject(state, {showOrderDetails: false});
         default:
             return state;
     }
