@@ -7,7 +7,7 @@ import Spinner from '../../../components/UI/Spinner/Spinner';
 import Input from '../../../components/UI/Forms/Input/Input';
 import withErrorHandler from '../../../hoc/withErrorHandler/withErrorHandler';
 import * as actions from '../../../store/actions';
-import { updateObject} from '../../../utilities/utility';
+import { updateObject, checkValidity} from '../../../utilities/utility';
 
 
 class ContactData extends Component {
@@ -117,14 +117,11 @@ class ContactData extends Component {
     }
 
     inputChangedHandler = (event, inputIdentifier) => {
-        const updatedOrderForm = {
-            ...this.state.orderForm // Only creates a shallow copy. Contained objects will be refs
-        };
+        
         // to get a deepER copy...to get just the value as a copy
-        const updatedFormElement = updateObject(this.state.orderForm[inputIdentifier],
-            {
+        const updatedFormElement = updateObject(this.state.orderForm[inputIdentifier], {
                 value: event.target.value,
-                valid: this.checkValidity(updatedFormElement.value, updatedFormElement.validation),
+                valid: checkValidity(event.target.value, this.state.orderForm[inputIdentifier].validation),
                 touched: true
             }
         )
@@ -134,6 +131,10 @@ class ContactData extends Component {
         // updatedFormElement.touched = true;
         // updatedOrderForm[inputIdentifier] = updatedFormElement;
 
+        const updatedOrderForm = updateObject(this.state.orderForm, {
+            [inputIdentifier]:updatedFormElement    
+        })
+
         let formIsValid = true;
         for (let inputIdentifier in updatedOrderForm ) {
                 formIsValid = updatedOrderForm[inputIdentifier].valid && formIsValid;
@@ -141,7 +142,6 @@ class ContactData extends Component {
         this.setState({formIsValid: formIsValid});
 
         this.setState({orderForm: updatedOrderForm});
-        //console.log('Id:',inputIdentifier,'validity: ',updatedOrderForm[inputIdentifier].valid, 'Value: ', updatedOrderForm[inputIdentifier].value);
     }
 
     // Alternate way to write this using setState() functional form 
@@ -170,37 +170,6 @@ class ContactData extends Component {
     //     this.setState({formIsValid: formIsValid});
     //     console.log('inputChangeHandler.formIsValid: ', this.state.formIsValid);
     // }
-
-    checkValidity(value, rules) {
-        let isValid = true;
-        if (!rules) {
-            return true;
-        }
-        
-        if (rules.required) {
-            isValid = value.trim() !== '' && isValid;
-        }
-
-        if (rules.minLength) {
-            isValid = value.length >= rules.minLength && isValid
-        }
-
-        if (rules.maxLength) {
-            isValid = value.length <= rules.maxLength && isValid
-        }
-
-        if (rules.isEmail) {
-            const pattern = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
-            isValid = pattern.test(value) && isValid
-        }
-
-        if (rules.isNumeric) {
-            const pattern = /^\d+$/;
-            isValid = pattern.test(value) && isValid
-        }
-
-        return isValid;
-    }
 
     render() {
         const formElementsArray =[];
