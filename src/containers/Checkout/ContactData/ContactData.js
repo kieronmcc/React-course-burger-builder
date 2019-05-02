@@ -7,6 +7,7 @@ import Spinner from '../../../components/UI/Spinner/Spinner';
 import Input from '../../../components/UI/Forms/Input/Input';
 import withErrorHandler from '../../../hoc/withErrorHandler/withErrorHandler';
 import * as actions from '../../../store/actions';
+import { updateObject} from '../../../utilities/utility';
 
 
 class ContactData extends Component {
@@ -98,6 +99,7 @@ class ContactData extends Component {
     }
 
     orderHandler = (event) => {
+        console.log("OrderHandler Called");
         event.preventDefault();
         const formData ={};
         for (let formElementId in this.state.orderForm) {
@@ -107,10 +109,11 @@ class ContactData extends Component {
         const order = {
             ingredients: this.props.ingredients,
             price: this.props.price,
-            orderData: formData
+            orderData: formData,
+            userId: this.props.userId
         }       
 
-        this.props.onOrderBurger(order);
+        this.props.onOrderBurger(order, this.props.token);
     }
 
     inputChangedHandler = (event, inputIdentifier) => {
@@ -118,14 +121,18 @@ class ContactData extends Component {
             ...this.state.orderForm // Only creates a shallow copy. Contained objects will be refs
         };
         // to get a deepER copy...to get just the value as a copy
-        const updatedFormElement = {
-            ...updatedOrderForm[inputIdentifier]
-        };
+        const updatedFormElement = updateObject(this.state.orderForm[inputIdentifier],
+            {
+                value: event.target.value,
+                valid: this.checkValidity(updatedFormElement.value, updatedFormElement.validation),
+                touched: true
+            }
+        )
         // SO now using the copies (since we should never update state directly)
-        updatedFormElement.value = event.target.value;
-        updatedFormElement.valid = this.checkValidity(updatedFormElement.value, updatedFormElement.validation);
-        updatedFormElement.touched = true;
-        updatedOrderForm[inputIdentifier] = updatedFormElement;
+        // updatedFormElement.value = event.target.value;
+        // updatedFormElement.valid = this.checkValidity(updatedFormElement.value, updatedFormElement.validation);
+        // updatedFormElement.touched = true;
+        // updatedOrderForm[inputIdentifier] = updatedFormElement;
 
         let formIsValid = true;
         for (let inputIdentifier in updatedOrderForm ) {
@@ -166,14 +173,30 @@ class ContactData extends Component {
 
     checkValidity(value, rules) {
         let isValid = true;
-        if (rules.required) {
-            isValid = value.trim() !== '';
+        if (!rules) {
+            return true;
         }
+        
+        if (rules.required) {
+            isValid = value.trim() !== '' && isValid;
+        }
+
         if (rules.minLength) {
-            isValid = value.length >= rules.minLength && isValid;
-        } 
+            isValid = value.length >= rules.minLength && isValid
+        }
+
         if (rules.maxLength) {
-            isValid = value.length <= rules.maxLength && isValid;
+            isValid = value.length <= rules.maxLength && isValid
+        }
+
+        if (rules.isEmail) {
+            const pattern = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+            isValid = pattern.test(value) && isValid
+        }
+
+        if (rules.isNumeric) {
+            const pattern = /^\d+$/;
+            isValid = pattern.test(value) && isValid
         }
 
         return isValid;
@@ -223,13 +246,15 @@ const mapStateToProps = state => {
     return {
         ingredients: state.burgerBuilder.ingredients,
         price: state.burgerBuilder.totalPrice,
-        loading: state.order.loading
+        loading: state.order.loading,
+        token: state.auth.token,
+        userId: state.auth.userId
     };
 }
 
 const mapDispatchersToProps = dispatch => {
     return {
-        onOrderBurger: (orderData) => dispatch(actions.purchaseBurgerStart(orderData))
+        onOrderBurger: (orderData, token) => dispatch(actions.purchaseBurgerStart(orderData, token))
     };
 }
 

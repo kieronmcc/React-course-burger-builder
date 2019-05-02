@@ -33,9 +33,7 @@ export const initIngredients = () => {
     return async (dispatch) => {
         try {
             const res = await axios.get('/ingredients.json');
-            //this.setState({ingredients: res.data});
             dispatch(setIngredients(res.data));
-            console.log('Ingredients fetched: ', this.state.ingredients); 
         } catch (error) {
             console.log('Error while fetching ingredients: ', error)
             dispatch(fetchIngredientsFailed());

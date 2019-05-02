@@ -10,4 +10,10 @@ export {
     getOrderDetails,
     cancelOrderDetails
 } from './order';
+export {
+    auth,
+    logout,
+    setAuthRedirectPath,
+    retrieveAuthData
+} from './auth';
 

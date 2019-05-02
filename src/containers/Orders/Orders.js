@@ -16,7 +16,7 @@ class Orders extends Component {
     };
 
     componentDidMount = () => {
-        this.props.onFetchOrders();
+        this.props.onFetchOrders(this.props.token, this.props.userId);
     }
 
     cancelShowDetailsHandler = () => {
@@ -65,13 +65,15 @@ const mapStateToProps = state => {
         loading: state.order.loading,
         orderDetails: state.order.orderDetails,
         showOrderDetails: state.order.showOrderDetails,
-        showOrderId: state.order.showOrderId
+        showOrderId: state.order.showOrderId,
+        token: state.auth.token,
+        userId: state.auth.userId
     };
 }
 
 const mapDispatchersToProps = dispatch => {
     return {
-        onFetchOrders: () => dispatch(actions.fetchOrders()),
+        onFetchOrders: (token, userId) => dispatch(actions.fetchOrders(token, userId)),
         onGetOrderDetails: (orderId) => dispatch(actions.getOrderDetails(orderId)),
         onCancelOrderDetails: () => dispatch(actions.cancelOrderDetails())
     };
