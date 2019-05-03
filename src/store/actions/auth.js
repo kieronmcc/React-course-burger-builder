@@ -1,8 +1,6 @@
 import * as actionTypes from './actionTypes';
 import axios from 'axios';
 
-import React from 'react';
-
 // Action Creators
 export const authStart = () => {
     return {
@@ -26,7 +24,6 @@ export const authFail = (error) => {
 }
 
 export const logout = () => {
-    console.log("Logout Action called")
     // Destroy local storage on logout as auth data will
     // no longer be valid after logout
     localStorage.removeItem('token')
@@ -60,7 +57,6 @@ export const auth = (email, password, isSignup) => {
                 url = 'https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyDqptjiXfxTc2OHpTTdKgwVnAEjv6tppCQ'
             }
             const res = await axios.post(url, authData) 
-            console.log('Auth Response: ', res)
             // Using local storage API of browser to persist user data
             // such as authentication across sessions
             const expirationDate = new Date (new Date().getTime() + res.data.expiresIn * 1000)
@@ -71,10 +67,8 @@ export const auth = (email, password, isSignup) => {
             dispatch(checkAuthTimeout(res.data.expiresIn))
         } catch (error) {
             if (error.response) {
-                console.log('Auth Error: ', error.response)
                 dispatch(authFail(error.response.data.error))
             } else {
-                console.log('Auth Error: ', error)
                 dispatch(authFail(error))
             }
         }

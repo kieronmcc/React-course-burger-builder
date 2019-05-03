@@ -27,7 +27,6 @@ export const purchaseBurgerStart = (orderData, token) => {
         try {
             dispatch(purchaseBurgerInProgress());
             const res = await axios.post('/orders.json?auth=' + token, orderData);
-            console.log("Response: ", res);
             dispatch(purchaseBurgerSuccess(res.data.name, orderData) );
         } catch (error) {
             dispatch( purchaseBurgerFail(error) );
@@ -74,7 +73,6 @@ export const fetchOrders = (token, userId) => {
                     id: key
                 })
             }
-            console.log('FetchedOrders: ', fetchedOrders);
             dispatch( fetchOrdersSuccess(fetchedOrders) );
         } catch (error) {
             dispatch( fetchOrdersFail(error) );
@@ -94,7 +92,6 @@ export const getOrderDetails = (orderId) => {
         try {
             const res = await axios.get(`/orders/${orderId}.json`);
             const orderDetails = res.data;
-            console.log("Order Details: ", res.data);
             dispatch( getOrderDetailsSuccess(orderDetails, orderId));
         } catch (error) {
             //dispatch( getOrderDeatilsFail());

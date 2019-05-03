@@ -8,7 +8,6 @@ class OrderSummary extends Component {
     // to call this lifecycle method as it is done by the wrapping Modal
     // class component
     componentWillUpdate() {
-        console.log('[OrderSummary] will update');
     };
     
     render () {

@@ -35,7 +35,6 @@ export const initIngredients = () => {
             const res = await axios.get('/ingredients.json');
             dispatch(setIngredients(res.data));
         } catch (error) {
-            console.log('Error while fetching ingredients: ', error)
             dispatch(fetchIngredientsFailed());
         }
     }

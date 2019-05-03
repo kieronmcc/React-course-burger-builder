@@ -76,8 +76,6 @@ class Auth extends Component {
     }
 
     render() {
-
-        console.log("Rendering Auth")
         const formElementsArray =[];
         for (let key in this.state.controls) {
             formElementsArray.push({
@@ -104,9 +102,6 @@ class Auth extends Component {
         if (this.props.isAuthenticated) {
             authRedirect = <Redirect to={this.props.authRedirectPath} />;
         }
-
-        console.log("Auth component state", this.props.isAuthenticated, this.props.authRedirectPath)
-
 
         if (this.props.loading) {
             form = <Spinner/>

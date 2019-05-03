@@ -13,7 +13,7 @@ import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
 import * as actions from '../../store/actions/index';
  
 
-class BurgerBuilder extends Component {
+export class BurgerBuilder extends Component {
 
     state = {
         purchasing: false
@@ -80,7 +80,6 @@ class BurgerBuilder extends Component {
     // }
 
     componentDidMount () {
-        console.log('ComponentDidMount', this.props)
         this.props.onInitIngredients();
     }
 
@@ -133,8 +132,6 @@ class BurgerBuilder extends Component {
         let orderSummary = null;
 
         let burger = this.props.error ? <p>Ingredients Can't be loaded</p> : <Spinner />;
-
-        console.log('Ingredients: ', this.props.ingredients, this.props.error);
 
         /* Only use ingredients object for render when it has been
            fetched from the server */
