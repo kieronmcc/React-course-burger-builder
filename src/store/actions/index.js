@@ -13,7 +13,12 @@ export {
 export {
     auth,
     logout,
+    logoutSucceed,
+    authStart,
     setAuthRedirectPath,
-    retrieveAuthData
+    retrieveAuthData,
+    authSuccess,
+    authFail, 
+    checkAuthTimeout
 } from './auth';
 

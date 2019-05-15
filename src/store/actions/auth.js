@@ -1,5 +1,4 @@
 import * as actionTypes from './actionTypes';
-import axios from 'axios';
 
 // Action Creators
 export const authStart = () => {
@@ -26,52 +25,34 @@ export const authFail = (error) => {
 export const logout = () => {
     // Destroy local storage on logout as auth data will
     // no longer be valid after logout
-    localStorage.removeItem('token')
-    localStorage.removeItem('expirationDate')
-    localStorage.removeItem('userId')
+    // localStorage.removeItem('token')
+    // localStorage.removeItem('expirationDate')
+    // localStorage.removeItem('userId')
+    return {
+        type: actionTypes.AUTH_INITIATE_LOGOUT
+    }
+}
+
+export const logoutSucceed = () => {
     return {
         type: actionTypes.AUTH_LOGOUT
     }
 }
 
 export const checkAuthTimeout = (expirationTime) => {
-    return dispatch => {
-        setTimeout(() => {
-            dispatch(logout())
-        }, expirationTime * 1000)
+    return {
+        type: actionTypes.AUTH_CHECK_TIMEOUT,
+        expirationTime: expirationTime
     }
 }
 
 // Authentication Action(dispatcher - dispatch arg comes from redux-thunk)
 export const auth = (email, password, isSignup) => {
-    return async dispatch => {
-        try {
-            dispatch(authStart())
-            const authData = {
-                email: email,
-                password: password,
-                returnSecureToken: true
-            }
-            let url = 'https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyDqptjiXfxTc2OHpTTdKgwVnAEjv6tppCQ'
-            if (!isSignup) {
-                url = 'https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyDqptjiXfxTc2OHpTTdKgwVnAEjv6tppCQ'
-            }
-            const res = await axios.post(url, authData) 
-            // Using local storage API of browser to persist user data
-            // such as authentication across sessions
-            const expirationDate = new Date (new Date().getTime() + res.data.expiresIn * 1000)
-            localStorage.setItem('token', res.data.idToken)
-            localStorage.setItem('expirationDate', expirationDate)
-            localStorage.setItem('userId', res.data.localId)
-            dispatch(authSuccess(res.data.idToken, res.data.localId))
-            dispatch(checkAuthTimeout(res.data.expiresIn))
-        } catch (error) {
-            if (error.response) {
-                dispatch(authFail(error.response.data.error))
-            } else {
-                dispatch(authFail(error))
-            }
-        }
+    return {
+        type: actionTypes.AUTH_USER,
+        email: email,
+        password: password,
+        isSignup: isSignup
     }
 }
 
