@@ -1,4 +1,4 @@
-import { put, delay } from 'redux-saga/effects'
+import { put, delay, call } from 'redux-saga/effects'
 import axios from 'axios'
 
 import * as actions from '../actions/index'
@@ -10,7 +10,8 @@ export function* logoutSaga(action) {
     // Destroy local storage on logout as auth data will
     // no longer be valid after logout
     // yield keyword means only continue when the step is done
-    yield localStorage.removeItem('token')
+    //yield localStorage.removeItem('token')
+    yield call([localStorage, 'removeItem'], 'token') //? allows mocks for testability of generator functions
     yield localStorage.removeItem('expirationDate')
     yield localStorage.removeItem('userId')
     yield put(actions.logoutSucceed())
@@ -21,7 +22,7 @@ export function* checkAuthTimeoutSaga(action) {
     yield put(actions.logout())
 }
 
-export function* authUsersaga(action) {
+export function* authUserSaga(action) {
     yield put(actions.authStart())
 
     const authData = {
@@ -48,6 +49,22 @@ export function* authUsersaga(action) {
             yield put(actions.authFail(error.response.data.error))
         } else {
             yield put(actions.authFail(error))
+        }
+    }
+}
+
+export function* retrieveAuthDataSaga(action) {
+    const token = yield localStorage.getItem('token')
+    if (!token) {
+        yield put(actions.logout())
+    } else {
+        const expirationDate = yield new Date(localStorage.getItem('expirationDate'))
+        if (expirationDate <= new Date()) {
+            yield put(actions.logout())
+        } else {
+            const userId = yield localStorage.getItem('userId')
+            yield put(actions.authSuccess(token, userId))
+            yield put(actions.checkAuthTimeout((expirationDate.getTime() - new Date().getTime()) / 1000 ))
         }
     }
 }
